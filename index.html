@@ -1,0 +1,239 @@
+
+<html>
+<body>
+<canvas id="canvas" width="1024" height="400" style="border:1px solid #000000;"></canvas>
+
+<script>
+
+var a = [
+    [13.72717, 84.173209],
+    [14.317114, 87.991509],
+    [40.575106, 84.930209],
+    [41.587330, 87.641509],
+    [53.300202, 87.930809],
+    [58.939729, 83.737209],
+    [66.603704, 70.722909],
+    [69.459640, 67.360909],
+    [83.543178, 87.866209],
+    [86.745017, 85.403309],
+    [79.672249, 74.392209],
+    [72.216121, 63.899509],
+    [75.605267, 60.636809],
+    [79.762618, 58.431609],
+    [74.556895, 50.623009],
+    [65.157675, 57.274909],
+    [58.072106, 53.515209],
+    [54.746231, 54.527309],
+    [47.226857, 62.046709],
+    [24.090325, 52.936709],
+    [20.475240, 53.804309],
+    [6.448713, 54.382709],
+    [5.147284, 56.262609],
+    [20.330637, 57.997809],
+    [25.391755, 60.166909],
+    [23.945721, 61.612909],
+    [17.438570, 59.154609],
+    [17.293966, 63.492709],
+    [22.065878, 64.938809],
+    [20.186033, 67.107809],
+    [20.619843, 69.276909],
+    [31.465097, 74.916409],
+    [37.393832, 71.735109],
+    [42.744156, 79.832909]
+];
+
+var b = [
+    [46.50384, 31.969229],
+    [39.418284, 27.631129],
+    [31.898904, 36.596529],
+    [28.428424, 41.946789],
+    [27.271596, 48.164749],
+    [29.151440, 48.598639],
+    [26.403976, 51.201509],
+    [27.271596, 56.262609],
+    [45.780819, 64.215809],
+    [47.516064, 64.071209],
+    [42.744160, 75.350309],
+    [37.972242, 81.568209],
+    [41.442720, 84.604809],
+    [43.611770, 83.737209],
+    [48.528288, 87.352309],
+    [50.697338, 87.352309],
+    [50.841940, 84.460209],
+    [45.491616, 80.122109],
+    [45.636218, 78.531509],
+    [55.180052, 63.782009],
+    [55.180052, 59.299209],
+    [41.442720, 51.924409],
+    [42.165740, 50.333809],
+    [43.900985, 50.044609],
+    [47.949882, 53.804309],
+    [59.951957, 53.948909],
+    [60.241173, 52.792109],
+    [62.410210, 53.804309],
+    [65.302281, 53.370409],
+    [65.013077, 51.056909],
+    [63.133231, 49.900109],
+    [61.108783, 51.056909],
+    [59.373550, 51.056909],
+    [55.324654, 48.887819],
+    [51.275757, 48.743229],
+    [48.672890, 47.441799],
+    [46.359239, 42.236089],
+];
+
+var bikeOffsetX = 340;
+var bikeOffsetY = 96;
+var bikeScale = 3;
+var wheel1 = [15.992537, 86.340149];
+var wheel2 = [84.968346, 86.050964];
+var wheelRadius = 15;
+
+var canvas, gc, w, h, terrainFill, skyFill, img;
+var terrainHeight = 200;
+var startTime;
+function init() {
+
+    canvas = document.getElementById('canvas');
+    gc = canvas.getContext('2d');
+    w = canvas.width;
+    h = canvas.height;
+
+    startTime = new Date().getTime();
+
+    terrainFill = gc.createLinearGradient(0, h - terrainHeight, 0, h);
+    terrainFill.addColorStop(0.000, 'rgba(66, 170, 22, 1.000)');
+    terrainFill.addColorStop(1.000, 'rgba(43, 107, 13, 1.000)');
+
+    skyFill = gc.createLinearGradient(0, 0, 0, h);
+    skyFill.addColorStop(0.000, 'rgba(85, 147, 209, 1.000)');
+    skyFill.addColorStop(1.000, 'rgba(170, 255, 255, 1.000)');
+
+    img = new Image();
+
+    img.onload = function() {
+        window.requestAnimationFrame(draw);
+    }
+    img.src = 'jaakko_cut_small.png';
+}
+
+function getTerrainLocalY(t) {
+    return 0.4 * Math.sin(t / 110 * Math.PI) + 0.3 * Math.sin(t / 25 * Math.PI) + 0.1 * Math.cos(t / 50 * Math.PI);
+}
+
+function getTerrainY(t) {
+    var localY = getTerrainLocalY(t);
+    return h - (terrainHeight / 2) * (1 + localY);
+}
+
+function getWheelT(offset, wheel1X, segments) {
+    return offset + (wheel1X / w) * segments;
+}
+
+function getWheelX(wheel) {
+    return bikeOffsetX + wheel[0] * bikeScale;
+}
+
+function draw() {
+    var elapsed = new Date().getTime() - startTime;
+
+    gc.beginPath();
+
+    var segments = 100;
+    var offset = elapsed*0.05;
+
+    gc.fillStyle = skyFill;
+    gc.fillRect(0, 0, w, h);
+    gc.fillStyle = terrainFill;
+    gc.moveTo(0, h);
+    for (var i = 0; i <= segments; i++) {
+        var x = (i/segments)*w;
+        var t = offset + i;
+        var y = getTerrainY(t);
+        gc.lineTo(x,y);
+    }
+    gc.lineTo(w, h);
+    gc.closePath();
+    gc.fill();
+    gc.stroke();
+
+    var wheel1X = getWheelX(wheel1);
+    var wheel1T = getWheelT(offset, wheel1X, segments);
+    var wheel1Y = getTerrainY(wheel1T);
+
+    var wheel2X = getWheelX(wheel2);
+    var wheel2T = getWheelT(offset, wheel2X, segments);
+    var wheel2Y = getTerrainY(wheel2T);
+
+    drawBike(wheel1X, wheel1Y, wheel2X, wheel2Y, elapsed);
+
+    window.requestAnimationFrame(draw);
+}
+
+function drawBike(wheel1X, wheel1Y, wheel2X, wheel2Y, elapsed) {
+    gc.save();
+    var wheel1Height = h - wheel1Y;
+    var wheelsDx = wheel2X - wheel1X;
+    var wheelsDy = wheel2Y - wheel1Y;
+    var angle = Math.atan2(wheelsDy, wheelsDx);
+    var ox = -45, oy = -303;
+
+    gc.translate(-ox, -oy);
+    gc.translate(bikeOffsetX, bikeOffsetY - wheel1Height);
+
+    gc.rotate(angle);
+
+    drawWheel(wheel1[0], wheel1[1], wheelRadius, bikeScale, ox, oy, elapsed, angle);
+    drawWheel(wheel2[0], wheel2[1], wheelRadius, bikeScale, ox, oy, elapsed, angle);
+    drawShape(a, "#ba3f64", bikeScale, ox, oy);
+    drawShape(b, "#3f5fba", bikeScale, ox, oy);
+    gc.drawImage(img, ox+80, oy+20);
+    gc.restore();
+}
+
+function drawShape(points, fillStyle, s, ox, oy) {
+    gc.fillStyle = fillStyle;
+    gc.beginPath();
+    gc.moveTo(points[0][0]*s+ox, points[0][1]*s+oy);
+    for (var i = 1; i < points.length; i++) {
+        var x = points[i][0]*s+ox; var y = points[i][1]*s+oy;
+        gc.lineTo(x, y);
+    }
+    gc.closePath();
+    gc.fill();
+    gc.stroke();
+}
+
+function drawWheel(x, y, r, s, ox, oy, elapsed, bikeAngle) {
+    var speed = 0.0050;
+    gc.beginPath();
+    gc.fillStyle = "#b5ccc9";
+    var globalX = x*s+ox;
+    var globalY = y*s+oy;
+    gc.arc(globalX, globalY, r*s, 0, 2*Math.PI);
+    gc.fill();
+    gc.stroke();
+    var segments = 8;
+    for (var i = 0; i < segments; i++) {
+        var mag = 0.9*(r*s);
+        var angle = /*bikeAngle*/ + (i/segments)*2*Math.PI + elapsed * speed;
+        var x = Math.cos(angle)*mag;
+        var y = Math.sin(angle)*mag;
+        gc.beginPath();
+        gc.moveTo(globalX, globalY);
+        gc.lineTo(globalX+x, globalY+y);
+        gc.stroke();
+    }
+}
+
+function debugPoint(x, y) {
+    gc.beginPath();
+    gc.fillStyle = "red";
+    gc.arc(x, y, 10, 0, 2*Math.PI);
+    gc.fill();
+}
+
+init();
+</script>
+</body>
+</html>
